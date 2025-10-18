@@ -11,25 +11,26 @@
     <style>
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            background-color: #f0f2f5;
+            background-color: #f8fafc; /* Changed to slate-50 */
         }
         .main-container {
             display: flex;
             flex-direction: column;
             height: 100vh; /* Full viewport height */
+            background-color: #f8fafc;
         }
         .content-body {
             flex-grow: 1;
             overflow-y: auto;
         }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a5b4fc; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
         .loader {
-            border: 4px solid #e5e7eb;
-            border-top: 4px solid #6366f1;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #4f46e5; /* Indigo-600 */
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -44,7 +45,7 @@
             border: 4px solid #fff;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .tab-inactive { color: #e0e7ff; }
+        .tab-inactive { color: #c7d2fe; } /* Lighter for inactive */
         .tab-active {
             color: #ffffff;
             font-weight: 700;
@@ -52,17 +53,17 @@
         }
         /* Animation for modals */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        .animate-scale-in { animation: scaleIn 0.3s ease-out forwards; }
+        .animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-slate-50">
 
-    <div class="w-full max-w-md mx-auto bg-gray-100 shadow-lg main-container">
+    <div class="w-full max-w-md mx-auto bg-slate-50 shadow-2xl main-container">
         
         <!-- Header -->
-        <header class="bg-indigo-600 text-white p-4 shadow-md rounded-b-2xl">
+        <header class="bg-indigo-600 text-white p-4 shadow-lg rounded-b-3xl z-20">
             <h1 class="text-xl font-bold text-center">បញ្ជីខ្មៅបុគ្គលិក</h1>
              <!-- Tab Navigation -->
             <div class="flex mt-4">
@@ -82,8 +83,8 @@
                          <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                             <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
                         </span>
-                        <input type="text" id="search" placeholder="វាយឈ្មោះ ឬអត្តលេខ..." class="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                        <div id="suggestions" class="suggestions-list custom-scrollbar absolute z-20 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto hidden shadow-lg"></div>
+                        <input type="text" id="search" placeholder="វាយឈ្មោះ ឬអត្តលេខ..." class="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-sm">
+                        <div id="suggestions" class="suggestions-list custom-scrollbar absolute z-20 w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-y-auto hidden shadow-lg"></div>
                     </div>
                 </div>
                 <!-- Initial Loader -->
@@ -93,38 +94,38 @@
                 </div>
                 <!-- Employee Info & Form Section -->
                 <div id="form-section" class="hidden mt-6 animate-fade-in">
-                    <div class="flex flex-col items-center bg-white p-4 rounded-lg border">
+                    <div class="flex flex-col items-center bg-white p-5 rounded-xl border">
                         <img id="photo" src="https://placehold.co/100x100/e2e8f0/e2e8f0?text=Photo" alt="រូបថតបុគ្គលិក" class="profile-img rounded-full">
                         <h2 id="name" class="text-xl font-bold mt-3 text-gray-800"></h2>
                         <p id="employee-id" class="text-sm text-gray-500"></p>
                     </div>
-                    <div class="mt-4 space-y-2 text-sm bg-white p-3 rounded-lg border">
-                        <div class="flex justify-between p-2 rounded-md hover:bg-gray-50"><strong class="text-gray-600">ភេទ:</strong> <span id="gender" class="text-gray-800 font-medium"></span></div>
-                        <div class="flex justify-between p-2 rounded-md hover:bg-gray-50"><strong class="text-gray-600">ថ្នាក់:</strong> <span id="class" class="text-gray-800 font-medium"></span></div>
-                        <div class="flex justify-between p-2 rounded-md hover:bg-gray-50"><strong class="text-gray-600">ក្រុម:</strong> <span id="group" class="text-gray-800 font-medium"></span></div>
-                        <div class="flex justify-between p-2 rounded-md hover:bg-gray-50"><strong class="text-gray-600">ផ្នែកការងារ:</strong> <span id="department" class="text-gray-800 font-medium"></span></div>
+                    <div class="mt-4 space-y-2 text-sm bg-white p-4 rounded-xl border">
+                        <div class="flex justify-between p-2 rounded-lg hover:bg-slate-50"><strong class="text-gray-600">ភេទ:</strong> <span id="gender" class="text-gray-800 font-medium"></span></div>
+                        <div class="flex justify-between p-2 rounded-lg hover:bg-slate-50"><strong class="text-gray-600">ថ្នាក់:</strong> <span id="class" class="text-gray-800 font-medium"></span></div>
+                        <div class="flex justify-between p-2 rounded-lg hover:bg-slate-50"><strong class="text-gray-600">ក្រុម:</strong> <span id="group" class="text-gray-800 font-medium"></span></div>
+                        <div class="flex justify-between p-2 rounded-lg hover:bg-slate-50"><strong class="text-gray-600">ផ្នែកការងារ:</strong> <span id="department" class="text-gray-800 font-medium"></span></div>
                     </div>
-                    <div class="mt-6 bg-white p-3 rounded-lg border">
+                    <div class="mt-4 bg-white p-4 rounded-xl border">
                         <label for="problem" class="font-medium text-gray-700">បញ្ហាដែលបានកើតឡើង</label>
                         <textarea id="problem" rows="4" placeholder="សូមសរសេរពីបញ្ហា..." class="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"></textarea>
                     </div>
-                    <button id="save-button" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg mt-6 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-transform transform active:scale-95 flex items-center justify-center">
+                    <button id="save-button" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-xl mt-6 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-transform transform active:scale-95 flex items-center justify-center shadow-lg shadow-red-500/30">
                         <span id="save-button-text">រក្សាទុកក្នុងបញ្ជីខ្មៅ</span>
                         <div id="save-loader" class="loader !w-6 !h-6 !border-2 !border-t-white hidden"></div>
                     </button>
-                    <button id="reset-button" class="w-full bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg mt-3 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition">ចាប់ផ្តើមសារជាថ្មី</button>
+                    <button id="reset-button" class="w-full bg-white text-gray-700 font-bold py-3 px-4 rounded-xl mt-3 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition border">ចាប់ផ្តើមសារជាថ្មី</button>
                 </div>
             </div>
 
             <!-- View Blacklist Section -->
             <div id="blacklist-section" class="hidden">
-                <div class="sticky top-0 bg-gray-100 pt-1 pb-3 z-10">
+                <div class="sticky top-0 bg-slate-50 pt-1 pb-3 z-10">
                      <div class="flex items-center space-x-2">
                         <div class="relative flex-grow">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3"><svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg></span>
-                            <input type="text" id="blacklist-search" placeholder="ស្វែងរកក្នុងបញ្ជី..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                            <input type="text" id="blacklist-search" placeholder="ស្វែងរកក្នុងបញ្ជី..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-sm">
                         </div>
-                        <button id="refresh-blacklist-btn" class="p-2.5 bg-white rounded-lg border border-gray-300 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 active:scale-90 transition" title="ផ្ទុកឡើងវិញ">
+                        <button id="refresh-blacklist-btn" class="p-2.5 bg-white rounded-xl border border-gray-300 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 active:scale-90 transition shadow-sm" title="ផ្ទុកឡើងវិញ">
                             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0M6.828 6.828A8.25 8.25 0 0118 6.828m0 0v4.992m0 0h-4.992m4.992 0l-3.182-3.182" />
                             </svg>
@@ -134,38 +135,45 @@
                 <div id="blacklist-loader" class="flex flex-col items-center justify-center my-8">
                     <div class="loader"></div><p class="mt-4 text-gray-600">កំពុងទាញយកបញ្ជី...</p>
                 </div>
-                <div id="blacklist-container" class="space-y-3"></div>
+                <div id="blacklist-container" class="space-y-4"></div>
                  <p id="no-results" class="text-center text-gray-500 my-8 hidden">រកមិនឃើញលទ្ធផលទេ។</p>
             </div>
         </div>
     </div>
 
     <!-- Modals and Popups -->
-    <div id="message-popup" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 animate-fade-in">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center animate-scale-in" id="message-box">
+    <div id="message-popup" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center animate-scale-in" id="message-box">
             <div id="message-icon" class="mx-auto mb-4"></div><h3 id="message-title" class="text-lg font-bold"></h3>
             <p id="message-text" class="text-sm text-gray-600 mt-2"></p>
             <button id="message-close" class="mt-6 w-full text-white px-6 py-2 rounded-lg transition">បិទ</button>
         </div>
     </div>
-    <div id="delete-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 animate-fade-in">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center animate-scale-in">
-            <svg class="w-16 h-16 text-red-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-            <h3 class="text-lg font-bold mt-4">បញ្ជាក់ការលុប</h3>
-            <p class="text-sm text-gray-600 mt-2">តើអ្នកពិតជាចង់លុបรายการនេះមែនទេ? ការกระทำនេះមិនអាចเอาคืนបានទេ។</p>
-            <div class="flex justify-center space-x-4 mt-6">
-                <button id="confirm-delete-btn" class="w-full bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">លុប</button>
-                <button id="cancel-delete-btn" class="w-full bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300">បោះបង់</button>
+    <div id="delete-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm text-center animate-scale-in">
+            <div class="p-6">
+                <svg class="w-16 h-16 text-red-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                <h3 class="text-lg font-bold mt-4">បញ្ជាក់ការលុប</h3>
+                <p class="text-sm text-gray-600 mt-2">តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ? សកម្មភាពនេះមិនអាចย้อนกลับបានទេ។</p>
+            </div>
+            <div class="flex bg-gray-50 rounded-b-xl px-4 py-3">
+                <button id="cancel-delete-btn" class="w-full mr-2 bg-white text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-200 border">បោះបង់</button>
+                <button id="confirm-delete-btn" class="w-full ml-2 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">យល់ព្រមលុប</button>
             </div>
         </div>
     </div>
-    <div id="edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 animate-fade-in">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm animate-scale-in">
-            <h3 class="text-lg font-bold">កែប្រែបញ្ហា</h3>
-            <p id="edit-modal-name" class="text-sm text-gray-600 mt-1"></p>
-            <textarea id="edit-problem-textarea" rows="5" class="w-full mt-4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"></textarea>
-            <div class="flex justify-end space-x-3 mt-4">
-                <button id="cancel-edit-btn" class="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-300">បោះបង់</button>
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm animate-scale-in">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-lg font-bold">កែប្រែបញ្ហា</h3>
+                <button id="close-edit-modal-btn" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="p-4">
+                <p id="edit-modal-name" class="text-sm text-gray-600 mb-2"></p>
+                <textarea id="edit-problem-textarea" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"></textarea>
+            </div>
+            <div class="flex justify-end space-x-3 bg-gray-50 p-4 rounded-b-xl">
+                <button id="cancel-edit-btn" class="bg-white text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-200 border">បោះបង់</button>
                 <button id="save-edit-btn" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700">រក្សាទុក</button>
             </div>
         </div>
@@ -224,6 +232,8 @@
         const editProblemTextarea = document.getElementById('edit-problem-textarea');
         const saveEditBtn = document.getElementById('save-edit-btn');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const closeEditModalBtn = document.getElementById('close-edit-modal-btn');
+
 
         // --- HELPER FUNCTIONS ---
         function showMessage(type, title, text) {
@@ -272,12 +282,12 @@
                 const photoSrc = item['Photo URL'] || `https://placehold.co/48x48/e2e8f0/gray?text=${item.Name.charAt(0)}`;
                 const date = new Date(item.Timestamp).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
                 const card = document.createElement('div');
-                card.className = "blacklist-item bg-white p-3 rounded-lg border border-gray-200 flex items-start space-x-4 shadow-sm transition-shadow";
+                card.className = "blacklist-item bg-white p-4 rounded-xl border border-gray-200 flex items-start space-x-4 shadow-sm hover:shadow-md transition-shadow";
                 card.dataset.timestamp = item.Timestamp; card.dataset.name = item.Name; card.dataset.id = item.ID;
-                card.innerHTML = `<img src="${photoSrc}" class="w-12 h-12 rounded-full object-cover border" onerror="this.onerror=null;this.src='https://placehold.co/48x48/e2e8f0/gray?text=Err';">
+                card.innerHTML = `<img src="${photoSrc}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow" onerror="this.onerror=null;this.src='https://placehold.co/48x48/e2e8f0/gray?text=Err';">
                     <div class="flex-1"><div class="flex justify-between items-start"><div><p class="font-bold text-gray-800">${item.Name}</p><p class="text-xs text-gray-400">ID: ${item.ID}</p></div>
-                    <div class="flex space-x-2"><button class="edit-btn p-1.5 text-gray-400 hover:text-indigo-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg></button><button class="delete-btn p-1.5 text-gray-400 hover:text-red-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></div>
-                    <p class="text-xs text-gray-500 my-2">${date}</p><p class="problem-text text-sm text-gray-700 bg-gray-100 p-2 rounded-md">${item['Problem Description'] || 'គ្មានការពិពណ៌នា'}</p></div>`;
+                    <div class="flex space-x-2"><button class="edit-btn p-1.5 text-gray-400 hover:text-indigo-600 rounded-full hover:bg-indigo-50 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg></button><button class="delete-btn p-1.5 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></div>
+                    <p class="text-xs text-gray-500 my-2">${date}</p><p class="problem-text text-sm text-gray-700 bg-slate-100 p-3 rounded-lg">${item['Problem Description'] || 'គ្មានការពិពណ៌នា'}</p></div>`;
                 blacklistContainer.appendChild(card);
             });
         }
@@ -302,7 +312,7 @@
         // --- FORM & DATA MANIPULATION ---
         function displaySuggestions(filtered) {
             if (filtered.length === 0) { suggestionsDiv.classList.add('hidden'); return; }
-            suggestionsDiv.innerHTML = filtered.map(emp => `<div class="flex items-center p-2 hover:bg-indigo-50 cursor-pointer border-b last:border-b-0" data-id="${emp.id}"><img src="${emp.photo || 'https://placehold.co/40x40/e2e8f0/gray?text=...'}" alt="Photo" class="w-10 h-10 rounded-full object-cover mr-3 border" onerror="this.onerror=null;this.src='https://placehold.co/40x40/e2e8f0/gray?text=Err';"><div><p class="font-medium text-gray-800">${emp.name}</p><p class="text-sm text-gray-500">${emp.id}</p></div></div>`).join('');
+            suggestionsDiv.innerHTML = filtered.map(emp => `<div class="flex items-center p-3 hover:bg-indigo-50 cursor-pointer border-b last:border-b-0" data-id="${emp.id}"><img src="${emp.photo || 'https://placehold.co/40x40/e2e8f0/gray?text=...'}" alt="Photo" class="w-10 h-10 rounded-full object-cover mr-3 border" onerror="this.onerror=null;this.src='https://placehold.co/40x40/e2e8f0/gray?text=Err';"><div><p class="font-medium text-gray-800">${emp.name}</p><p class="text-sm text-gray-500">${emp.id}</p></div></div>`).join('');
             suggestionsDiv.classList.remove('hidden');
         }
 
@@ -387,7 +397,7 @@
             recordToModify.timestamp = card.dataset.timestamp; recordToModify.element = card;
             if (e.target.closest('.delete-btn')) { deleteModal.classList.remove('hidden'); }
             if (e.target.closest('.edit-btn')) {
-                editModalName.textContent = card.dataset.name;
+                editModalName.textContent = `កែប្រែសម្រាប់: ${card.dataset.name}`;
                 editProblemTextarea.value = card.querySelector('.problem-text').textContent;
                 editModal.classList.remove('hidden');
             }
@@ -406,6 +416,8 @@
             if (newProblem) { postData('update', { timestamp: recordToModify.timestamp, newProblem }); editModal.classList.add('hidden'); }
         });
         cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden'));
+        closeEditModalBtn.addEventListener('click', () => editModal.classList.add('hidden'));
+
         messageClose.addEventListener('click', () => messagePopup.classList.add('hidden'));
 
         // --- INITIALIZATION ---
