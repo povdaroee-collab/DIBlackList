@@ -2,392 +2,417 @@
 <html lang="km">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធគ្រប់គ្រងបញ្ជីខ្មៅបុគ្គលិក</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>បញ្ជីខ្មៅបុគ្គលិក</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kantumruy Pro', sans-serif; background-color: #f0f2f5; }
-        .loader { border: 5px solid #f3f3f3; border-top: 5px solid #3b82f6; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Full viewport height */
+        }
+        .content-body {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a5b4fc; }
+        
+        .loader {
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .nav-button.active svg, .nav-button.active span { color: #2563eb; font-weight: 600; }
-        .dropdown-item:hover { background-color: #f1f5f9; }
-        .modal-backdrop { background-color: rgba(0,0,0,0.5); }
-        .refresh-btn.loading svg { animation: spin 1s linear infinite; }
+
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .tab-inactive { color: #e0e7ff; }
+        .tab-active {
+            color: #ffffff;
+            font-weight: 700;
+            border-bottom: 3px solid #ffffff;
+        }
+        /* Animation for modals */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .animate-scale-in { animation: scaleIn 0.3s ease-out forwards; }
     </style>
 </head>
-<body class="bg-slate-100 pb-24">
+<body class="bg-gray-100">
 
-    <div class="w-full max-w-2xl mx-auto bg-white rounded-b-2xl shadow-lg">
-        <div class="text-center p-6 bg-blue-600 text-white rounded-t-2xl">
-            <h1 class="text-2xl md:text-3xl font-bold">បញ្ជីខ្មៅបុគ្គលិក</h1>
-            <p class="opacity-80 mt-1">Employee Blacklist Management</p>
-        </div>
-
-        <div class="p-4 md:p-6">
-            <div id="loader" class="flex flex-col items-center justify-center space-y-3 p-8"><div class="loader"></div><p class="text-slate-600">កំពុងទាញទិន្នន័យ...</p></div>
-
-            <!-- VIEW 1: Add to Blacklist -->
-            <div id="add-view" class="hidden">
-                <form id="main-form" class="space-y-6">
-                    <div class="relative">
-                        <label for="employee-search" class="block text-sm font-medium text-slate-700 mb-1">ស្វែងរកបុគ្គលិក</label>
-                        <input autocomplete="off" id="employee-search" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="វាយឈ្មោះ ឬអត្តលេខ...">
-                        <div id="custom-dropdown" class="hidden absolute z-10 w-full bg-white border rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto"></div>
-                    </div>
-                    <div id="employee-info" class="hidden bg-slate-50 p-4 rounded-xl border space-y-4">
-                        <div class="flex items-center gap-4">
-                            <img id="employee-photo" src="https://placehold.co/100x100/e2e8f0/64748b?text=រូបថត" alt="រូបថត" class="w-20 h-20 rounded-full object-cover border-4 border-white shadow">
-                            <div>
-                                <h2 id="employee-name" class="text-lg font-bold text-slate-800"></h2>
-                                <p id="employee-id" class="text-sm text-slate-500"></p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-x-6 gap-y-2 pt-3 border-t text-sm">
-                            <div><strong class="text-slate-600">ភេទ:</strong> <span id="employee-gender"></span></div>
-                            <div><strong class="text-slate-600">ក្រុម:</strong> <span id="employee-group"></span></div>
-                            <div><strong class="text-slate-600">ថ្នាក់:</strong> <span id="employee-class"></span></div>
-                            <div><strong class="text-slate-600">ផ្នែក:</strong> <span id="employee-department"></span></div>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="problem-description" class="block text-sm font-medium text-slate-700 mb-1">បញ្ហា / មូលហេតុ</label>
-                        <textarea id="problem-description" rows="4" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="សរសេរមូលហេតុ..."></textarea>
-                    </div>
-                    <button id="submit-button" type="submit" disabled class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-300 disabled:bg-slate-300 transition">បន្ថែមទៅក្នុងបញ្ជីខ្មៅ</button>
-                </form>
+    <div class="w-full max-w-md mx-auto bg-gray-100 shadow-lg main-container">
+        
+        <!-- Header -->
+        <header class="bg-indigo-600 text-white p-4 shadow-md rounded-b-2xl">
+            <h1 class="text-xl font-bold text-center">បញ្ជីខ្មៅបុគ្គលិក</h1>
+             <!-- Tab Navigation -->
+            <div class="flex mt-4">
+                <button id="tab-add" class="flex-1 pb-2 text-center transition-colors duration-300 tab-active">បន្ថែមថ្មី</button>
+                <button id="tab-view" class="flex-1 pb-2 text-center transition-colors duration-300 tab-inactive">មើលបញ្ជី</button>
             </div>
+        </header>
 
-            <!-- VIEW 2: Search Blacklist -->
-            <div id="list-view" class="hidden space-y-4">
-                <div id="filter-bar" class="p-3 bg-slate-50 rounded-lg border space-y-3">
-                    <div class="flex gap-2 items-center">
-                        <input type="search" id="blacklist-search" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="ស្វែងរកតាមឈ្មោះ ឬអត្តលេខ...">
-                        <button id="refresh-btn" class="refresh-btn p-2 border rounded-lg bg-white hover:bg-slate-100 text-slate-600 flex-shrink-0">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5m7 7v-5h-5m-1-1a8 8 0 1116 0H4"></path></svg>
-                        </button>
-                    </div>
-                    <div class="flex gap-2 text-sm items-center">
-                        <span class="text-slate-600 font-medium flex-shrink-0">តម្រៀបតាម:</span>
-                        <select id="year-filter" class="w-full p-2 border rounded-lg bg-white"><option value="">គ្រប់ឆ្នាំ</option></select>
-                        <select id="month-filter" class="w-full p-2 border rounded-lg bg-white"><option value="">គ្រប់ខែ</option></select>
+        <!-- Content Body -->
+        <div class="content-body p-4 custom-scrollbar">
+            <!-- Add New Section -->
+            <div id="add-new-section">
+                <!-- Search Section -->
+                <div id="search-section" class="relative">
+                    <label for="search" class="font-medium text-gray-700">ស្វែងរក (ឈ្មោះ ឬ អត្តលេខ)</label>
+                    <div class="relative mt-2">
+                         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                        </span>
+                        <input type="text" id="search" placeholder="វាយឈ្មោះ ឬអត្តលេខ..." class="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                        <div id="suggestions" class="suggestions-list custom-scrollbar absolute z-20 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto hidden shadow-lg"></div>
                     </div>
                 </div>
-                <div id="blacklist-results" class="space-y-3 max-h-[55vh] overflow-y-auto pr-1"></div>
+                <!-- Initial Loader -->
+                <div id="initial-loader" class="flex flex-col items-center justify-center my-8">
+                    <div class="loader"></div>
+                    <p class="mt-4 text-gray-600">កំពុងទាញទិន្នន័យបុគ្គលិក...</p>
+                </div>
+                <!-- Employee Info & Form Section -->
+                <div id="form-section" class="hidden mt-6 animate-fade-in">
+                    <div class="flex flex-col items-center bg-white p-4 rounded-lg border">
+                        <img id="photo" src="https://placehold.co/100x100/e2e8f0/e2e8f0?text=Photo" alt="រូបថតបុគ្គលិក" class="profile-img rounded-full">
+                        <h2 id="name" class="text-xl font-bold mt-3 text-gray-800"></h2>
+                        <p id="employee-id" class="text-sm text-gray-500"></p>
+                    </div>
+                    <div class="mt-4 space-y-2 text-sm bg-white p-3 rounded-lg border">
+                        <div class="flex justify-between p-2 rounded-md hover:bg-gray-50"><strong class="text-gray-600">ភេទ:</strong> <span id="gender" class="text-gray-800 font-medium"></span></div>
+                        <div class="flex justify-between p-2 rounded-md hover:bg-gray-50"><strong class="text-gray-600">ថ្នាក់:</strong> <span id="class" class="text-gray-800 font-medium"></span></div>
+                        <div class="flex justify-between p-2 rounded-md hover:bg-gray-50"><strong class="text-gray-600">ក្រុម:</strong> <span id="group" class="text-gray-800 font-medium"></span></div>
+                        <div class="flex justify-between p-2 rounded-md hover:bg-gray-50"><strong class="text-gray-600">ផ្នែកការងារ:</strong> <span id="department" class="text-gray-800 font-medium"></span></div>
+                    </div>
+                    <div class="mt-6 bg-white p-3 rounded-lg border">
+                        <label for="problem" class="font-medium text-gray-700">បញ្ហាដែលបានកើតឡើង</label>
+                        <textarea id="problem" rows="4" placeholder="សូមសរសេរពីបញ្ហា..." class="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"></textarea>
+                    </div>
+                    <button id="save-button" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg mt-6 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-transform transform active:scale-95 flex items-center justify-center">
+                        <span id="save-button-text">រក្សាទុកក្នុងបញ្ជីខ្មៅ</span>
+                        <div id="save-loader" class="loader !w-6 !h-6 !border-2 !border-t-white hidden"></div>
+                    </button>
+                    <button id="reset-button" class="w-full bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg mt-3 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition">ចាប់ផ្តើមសារជាថ្មី</button>
+                </div>
             </div>
-            <div id="message-box" class="hidden p-4 mt-4 rounded-lg text-center font-medium"></div>
+
+            <!-- View Blacklist Section -->
+            <div id="blacklist-section" class="hidden">
+                <div class="sticky top-0 bg-gray-100 pt-1 pb-3 z-10">
+                     <div class="flex items-center space-x-2">
+                        <div class="relative flex-grow">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3"><svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg></span>
+                            <input type="text" id="blacklist-search" placeholder="ស្វែងរកក្នុងបញ្ជី..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                        </div>
+                        <button id="refresh-blacklist-btn" class="p-2.5 bg-white rounded-lg border border-gray-300 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 active:scale-90 transition" title="ផ្ទុកឡើងវិញ">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0M6.828 6.828A8.25 8.25 0 0118 6.828m0 0v4.992m0 0h-4.992m4.992 0l-3.182-3.182" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="blacklist-loader" class="flex flex-col items-center justify-center my-8">
+                    <div class="loader"></div><p class="mt-4 text-gray-600">កំពុងទាញយកបញ្ជី...</p>
+                </div>
+                <div id="blacklist-container" class="space-y-3"></div>
+                 <p id="no-results" class="text-center text-gray-500 my-8 hidden">រកមិនឃើញលទ្ធផលទេ។</p>
+            </div>
         </div>
     </div>
 
-    <!-- Modals -->
-    <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
-            <h3 class="text-lg font-bold">កែប្រែមូលហេតុ</h3>
-            <textarea id="edit-problem-textarea" rows="5" class="w-full p-2 border rounded-lg"></textarea>
-            <div class="flex justify-end gap-3">
-                <button id="cancel-edit-btn" class="px-4 py-2 bg-slate-200 rounded-lg">បោះបង់</button>
-                <button id="save-edit-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg">រក្សាទុក</button>
+    <!-- Modals and Popups -->
+    <div id="message-popup" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center animate-scale-in" id="message-box">
+            <div id="message-icon" class="mx-auto mb-4"></div><h3 id="message-title" class="text-lg font-bold"></h3>
+            <p id="message-text" class="text-sm text-gray-600 mt-2"></p>
+            <button id="message-close" class="mt-6 w-full text-white px-6 py-2 rounded-lg transition">បិទ</button>
+        </div>
+    </div>
+    <div id="delete-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center animate-scale-in">
+            <svg class="w-16 h-16 text-red-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+            <h3 class="text-lg font-bold mt-4">បញ្ជាក់ការលុប</h3>
+            <p class="text-sm text-gray-600 mt-2">តើអ្នកពិតជាចង់លុបรายการនេះមែនទេ? ការกระทำនេះមិនអាចเอาคืนបានទេ។</p>
+            <div class="flex justify-center space-x-4 mt-6">
+                <button id="confirm-delete-btn" class="w-full bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">លុប</button>
+                <button id="cancel-delete-btn" class="w-full bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300">បោះបង់</button>
             </div>
         </div>
     </div>
-     <div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4 text-center">
-            <h3 class="text-lg font-bold">បញ្ជាក់ការលុប</h3>
-            <p>តើអ្នកពិតជាចង់លុបបុគ្គលិកនេះចេញពីបញ្ជីខ្មៅមែនទេ?</p>
-            <div class="flex justify-center gap-3">
-                <button id="cancel-delete-btn" class="px-4 py-2 bg-slate-200 rounded-lg">ទេ, បោះបង់</button>
-                <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg">បាទ/ចាស, លុប</button>
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm animate-scale-in">
+            <h3 class="text-lg font-bold">កែប្រែបញ្ហា</h3>
+            <p id="edit-modal-name" class="text-sm text-gray-600 mt-1"></p>
+            <textarea id="edit-problem-textarea" rows="5" class="w-full mt-4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"></textarea>
+            <div class="flex justify-end space-x-3 mt-4">
+                <button id="cancel-edit-btn" class="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-300">បោះបង់</button>
+                <button id="save-edit-btn" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700">រក្សាទុក</button>
             </div>
         </div>
     </div>
-
-    <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] flex justify-around p-2">
-        <button id="nav-add" class="nav-button flex flex-col items-center text-slate-600 text-sm w-full py-1">
-             <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span>បន្ថែមថ្មី</span>
-        </button>
-        <button id="nav-list" class="nav-button active flex flex-col items-center text-slate-600 text-sm w-full py-1">
-            <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-            <span>បញ្ជីឈ្មោះ</span>
-        </button>
-    </nav>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
         // --- CONFIGURATION ---
+        const API_KEY = 'AIzaSyDblHwyyi17qKQMYUuoeV4Eobi6aNbhypE'; // Please replace with your actual API Key
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbznRbFJkPtAr6jivMeZTv3t_jC_3zRBfmOs-8hmlHGdsjUhpmko9DFm-DPMVe0Q4wqY/exec'; // Please replace with your actual Web App URL
         const SOURCE_SHEET_ID = '1eRyPoifzyvB4oBmruNyXcoKMKPRqjk6xDD6-bPNW6pc';
         const SOURCE_SHEET_NAME = 'DIList';
-        const SOURCE_RANGE = 'A9:AA';
-        const BLACKLIST_SHEET_ID = '1uqsiKu0SHOg_8MAHA1m-6ott9pjeom6qTxAv4HNS2To';
-        const BLACKLIST_SHEET_NAME = 'Sheet1';
-        const DESTINATION_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbznRbFJkPtAr6jivMeZTv3t_jC_3zRBfmOs-8hmlHGdsjUhpmko9DFm-DPMVe0Q4wqY/exec';
+        const SOURCE_RANGE = 'E9:AA';
 
-        // --- UI ELEMENTS ---
-        const loader = document.getElementById('loader');
-        const messageBox = document.getElementById('message-box');
-        const addView = document.getElementById('add-view');
-        const listView = document.getElementById('list-view');
-        const mainForm = document.getElementById('main-form');
-        const searchInput = document.getElementById('employee-search');
-        const customDropdown = document.getElementById('custom-dropdown');
-        const employeeInfo = document.getElementById('employee-info');
-        const problemTextarea = document.getElementById('problem-description');
-        const submitButton = document.getElementById('submit-button');
+        // --- GLOBAL VARIABLES ---
+        let employees = [];
+        let blacklistData = [];
+        let selectedEmployee = null;
+        let recordToModify = { timestamp: null, element: null };
+
+        // --- DOM ELEMENTS ---
+        const searchInput = document.getElementById('search');
+        const suggestionsDiv = document.getElementById('suggestions');
+        const initialLoader = document.getElementById('initial-loader');
+        const formSection = document.getElementById('form-section');
+        const photoEl = document.getElementById('photo');
+        const nameEl = document.getElementById('name');
+        const employeeIdEl = document.getElementById('employee-id');
+        const genderEl = document.getElementById('gender');
+        const classEl = document.getElementById('class');
+        const groupEl = document.getElementById('group');
+        const departmentEl = document.getElementById('department');
+        const problemTextarea = document.getElementById('problem');
+        const saveButton = document.getElementById('save-button');
+        const saveButtonText = document.getElementById('save-button-text');
+        const saveLoader = document.getElementById('save-loader');
+        const resetButton = document.getElementById('reset-button');
+        const tabAdd = document.getElementById('tab-add');
+        const tabView = document.getElementById('tab-view');
+        const addNewSection = document.getElementById('add-new-section');
+        const blacklistSection = document.getElementById('blacklist-section');
+        const blacklistLoader = document.getElementById('blacklist-loader');
+        const blacklistContainer = document.getElementById('blacklist-container');
         const blacklistSearchInput = document.getElementById('blacklist-search');
-        const blacklistResultsContainer = document.getElementById('blacklist-results');
-        const refreshBtn = document.getElementById('refresh-btn');
-        const yearFilter = document.getElementById('year-filter');
-        const monthFilter = document.getElementById('month-filter');
-        const editModal = document.getElementById('edit-modal');
+        const noResults = document.getElementById('no-results');
+        const refreshBlacklistBtn = document.getElementById('refresh-blacklist-btn');
+        const messagePopup = document.getElementById('message-popup');
+        const messageIcon = document.getElementById('message-icon');
+        const messageTitle = document.getElementById('message-title');
+        const messageText = document.getElementById('message-text');
+        const messageClose = document.getElementById('message-close');
         const deleteModal = document.getElementById('delete-modal');
-        const navAddBtn = document.getElementById('nav-add');
-        const navListBtn = document.getElementById('nav-list');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const editModal = document.getElementById('edit-modal');
+        const editModalName = document.getElementById('edit-modal-name');
+        const editProblemTextarea = document.getElementById('edit-problem-textarea');
+        const saveEditBtn = document.getElementById('save-edit-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
 
-        let employees = [], blacklistEmployees = [], selectedEmployee = null, entryToModify = null;
-
-        // --- API & DATA FUNCTIONS ---
-        async function fetchDataFromSheet(sheetId, sheetName, range) {
-            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}${range ? '&range=' + range : ''}`;
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Network response was not ok.');
-                const text = await response.text();
-                const jsonString = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1];
-                return JSON.parse(jsonString);
-            } catch (error) {
-                console.error(`Error fetching from ${sheetName}:`, error);
-                throw error;
-            }
-        }
-
-        async function postDataToScript(payload) {
-            try {
-                const response = await fetch(DESTINATION_APPS_SCRIPT_URL, {
-                    method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' },
-                });
-                return await response.json();
-            } catch (error) {
-                return { status: 'error', message: 'Network error occurred.' };
-            }
-        }
-
-        async function loadSourceEmployees() {
-            try {
-                const data = await fetchDataFromSheet(SOURCE_SHEET_ID, SOURCE_SHEET_NAME, SOURCE_RANGE);
-                employees = data.table.rows.map(row => {
-                    const getCell = (index) => (row.c && row.c[index] ? row.c[index].v : '');
-                    return { id: getCell(4), group: getCell(6), name: getCell(11), gender: getCell(13), class: getCell(17), department: getCell(18), photo: getCell(26) };
-                }).filter(emp => emp.id && emp.name);
-            } catch (error) { showMessage('មិនអាចទាញទិន្នន័យបុគ្គលិកបានទេ!', false); }
-        }
-
-        async function loadBlacklist(showRefreshMessage = false) {
-            if (showRefreshMessage) refreshBtn.classList.add('loading');
-            try {
-                const data = await fetchDataFromSheet(BLACKLIST_SHEET_ID, BLACKLIST_SHEET_NAME);
-                if (!data.table.rows || data.table.rows.length <= 1) {
-                    blacklistEmployees = [];
-                } else {
-                    blacklistEmployees = data.table.rows.slice(1).map(row => {
-                        const getCell = (index, isDate = false) => {
-                            if (!row.c || !row.c[index]) return null;
-                            const cell = row.c[index];
-                            if (isDate && cell.v && typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
-                                const parts = cell.v.match(/\d+/g);
-                                return parts ? new Date(parts[0], parts[1], parts[2], parts[3] || 0, parts[4] || 0, parts[5] || 0).toISOString() : cell.v;
-                            }
-                            return cell.v;
-                        };
-                        return { timestamp: getCell(0, true), id: getCell(1), name: getCell(2), problem: getCell(7), photo: getCell(8) };
-                    }).filter(e => e.timestamp);
-                }
-                populateFilters();
-                applyFilters();
-            } catch (error) {
-                console.error("Error loading blacklist:", error);
-                showMessage('មិនអាចទាញបញ្ជីខ្មៅបានទេ!', false);
-            } finally {
-                if(showRefreshMessage) refreshBtn.classList.remove('loading');
-            }
-        }
-
-        // --- UI & RENDERING ---
-        function renderCustomDropdown(filteredList) {
-            customDropdown.innerHTML = '';
-            if (filteredList.length === 0) {
-                customDropdown.innerHTML = `<div class="p-3 text-sm text-center text-slate-500">រកមិនឃើញលទ្ធផលទេ។</div>`;
+        // --- HELPER FUNCTIONS ---
+        function showMessage(type, title, text) {
+            messageTitle.textContent = title;
+            messageText.textContent = text;
+            if (type === 'success') {
+                messageIcon.innerHTML = `<svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                messageClose.className = 'mt-6 w-full text-white px-6 py-2 rounded-lg bg-green-500 hover:bg-green-600 transition';
             } else {
-                filteredList.forEach(emp => {
-                    const item = document.createElement('div');
-                    item.className = 'flex items-center gap-3 p-2 cursor-pointer dropdown-item';
-                    item.innerHTML = `<img src="${emp.photo || 'https://placehold.co/80x80/e2e8f0/64748b?text=??'}" class="w-10 h-10 rounded-full object-cover"><div class="truncate"><p class="font-medium text-sm text-slate-800">${emp.name}</p><p class="text-xs text-slate-500">${emp.id}</p></div>`;
-                    item.addEventListener('click', () => {
-                        searchInput.value = `${emp.name} - ${emp.id}`;
-                        selectedEmployee = emp; displayEmployeeInfo(emp); customDropdown.classList.add('hidden'); updateButtonState();
-                    });
-                    customDropdown.appendChild(item);
-                });
+                messageIcon.innerHTML = `<svg class="w-16 h-16 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                messageClose.className = 'mt-6 w-full text-white px-6 py-2 rounded-lg bg-red-500 hover:bg-red-600 transition';
             }
-            customDropdown.classList.remove('hidden');
+            messagePopup.classList.remove('hidden');
         }
 
-        function renderBlacklist(dataToRender) {
-            blacklistResultsContainer.innerHTML = '';
-            if (dataToRender.length === 0) {
-                blacklistResultsContainer.innerHTML = `<p class="text-center text-slate-500 p-8">មិនមានទិន្នន័យទេ។</p>`; return;
+        // --- FETCH & RENDER ---
+        async function fetchEmployees() {
+            if (employees.length > 0) return;
+            initialLoader.classList.remove('hidden');
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SOURCE_SHEET_ID}/values/${SOURCE_SHEET_NAME}!${SOURCE_RANGE}?key=${API_KEY}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                if (data.values) {
+                    employees = data.values.map(row => ({
+                        id: row[0] || '', group: row[2] || '', name: row[7] || '', gender: row[9] || '',
+                        class: row[13] || '', department: row[14] || '', photo: row[22] || ''
+                    })).filter(emp => emp.id && emp.name);
+                }
+            } catch (error) {
+                console.error('Error fetching employee data:', error);
+                showMessage('error', 'ទាញទិន្នន័យបរាជ័យ', 'សូមពិនិត្យ API Key និង Sheet ID ឡើងវិញ។');
+            } finally {
+                initialLoader.classList.add('hidden');
             }
-            dataToRender.forEach(emp => {
+        }
+
+        function renderBlacklist(data) {
+            blacklistContainer.innerHTML = ''; 
+            if (!data || data.length === 0) {
+                 blacklistContainer.innerHTML = `<p class="text-center text-gray-500 my-8">បញ្ជីខ្មៅនៅទំនេរ។</p>`;
+                 return;
+            }
+            data.forEach(item => {
+                const photoSrc = item['Photo URL'] || `https://placehold.co/48x48/e2e8f0/gray?text=${item.Name.charAt(0)}`;
+                const date = new Date(item.Timestamp).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
                 const card = document.createElement('div');
-                card.className = 'flex items-start gap-3 p-3 bg-white rounded-lg border shadow-sm';
-                card.innerHTML = `
-                    <img src="${emp.photo || 'https://placehold.co/80x80/e2e8f0/64748b?text=រូបថត'}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow">
-                    <div class="flex-1">
-                        <p class="font-semibold text-slate-800">${emp.name}</p>
-                        <p class="text-xs text-slate-500">ID: ${emp.id}</p>
-                        <p class="text-sm mt-1 text-red-700 bg-red-50 p-2 rounded">${emp.problem || 'គ្មានមូលហេតុ'}</p>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <button class="edit-btn p-1 text-blue-500 hover:bg-blue-100 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"></path></svg></button>
-                        <button class="delete-btn p-1 text-red-500 hover:bg-red-100 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                    </div>`;
-                card.querySelector('.edit-btn').addEventListener('click', () => openEditModal(emp));
-                card.querySelector('.delete-btn').addEventListener('click', () => openDeleteModal(emp));
-                blacklistResultsContainer.appendChild(card);
+                card.className = "blacklist-item bg-white p-3 rounded-lg border border-gray-200 flex items-start space-x-4 shadow-sm transition-shadow";
+                card.dataset.timestamp = item.Timestamp; card.dataset.name = item.Name; card.dataset.id = item.ID;
+                card.innerHTML = `<img src="${photoSrc}" class="w-12 h-12 rounded-full object-cover border" onerror="this.onerror=null;this.src='https://placehold.co/48x48/e2e8f0/gray?text=Err';">
+                    <div class="flex-1"><div class="flex justify-between items-start"><div><p class="font-bold text-gray-800">${item.Name}</p><p class="text-xs text-gray-400">ID: ${item.ID}</p></div>
+                    <div class="flex space-x-2"><button class="edit-btn p-1.5 text-gray-400 hover:text-indigo-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg></button><button class="delete-btn p-1.5 text-gray-400 hover:text-red-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></div>
+                    <p class="text-xs text-gray-500 my-2">${date}</p><p class="problem-text text-sm text-gray-700 bg-gray-100 p-2 rounded-md">${item['Problem Description'] || 'គ្មានការពិពណ៌នា'}</p></div>`;
+                blacklistContainer.appendChild(card);
             });
         }
         
-        function populateFilters() {
-            const years = [...new Set(blacklistEmployees.map(e => new Date(e.timestamp).getFullYear()))].sort((a, b) => b - a);
-            yearFilter.innerHTML = '<option value="">គ្រប់ឆ្នាំ</option>';
-            years.forEach(year => yearFilter.innerHTML += `<option value="${year}">${year}</option>`);
-            monthFilter.innerHTML = '<option value="">គ្រប់ខែ</option>';
-            [...Array(12).keys()].forEach(i => monthFilter.innerHTML += `<option value="${i+1}">ខែ ${i+1}</option>`);
+        async function fetchBlacklist() {
+            blacklistContainer.innerHTML = ''; blacklistLoader.classList.remove('hidden'); noResults.classList.add('hidden');
+            try {
+                const response = await fetch(`${WEB_APP_URL}?t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error('Failed to fetch blacklist.');
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(data.message);
+                blacklistData = data.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+                renderBlacklist(blacklistData);
+            } catch (error) {
+                console.error('Error fetching blacklist:', error);
+                blacklistContainer.innerHTML = `<div class="text-center text-red-500 my-8"><p class="font-bold">មិនអាចទាញយកបញ្ជីបានទេ</p><p class="text-sm mt-1">សូមប្រាកដថាអ្នកបាន Deploy Apps Script ត្រឹមត្រូវ។</p></div>`;
+            } finally {
+                blacklistLoader.classList.add('hidden');
+            }
         }
         
-        function applyFilters() {
-            const searchTerm = blacklistSearchInput.value.toLowerCase(), selectedYear = yearFilter.value, selectedMonth = monthFilter.value;
-            let filtered = blacklistEmployees;
-            if (selectedYear) filtered = filtered.filter(e => new Date(e.timestamp).getFullYear() == selectedYear);
-            if (selectedMonth) filtered = filtered.filter(e => new Date(e.timestamp).getMonth() + 1 == selectedMonth);
-            if (searchTerm) filtered = filtered.filter(e => e.name.toLowerCase().includes(searchTerm) || (e.id && String(e.id).toLowerCase().includes(searchTerm)));
-            renderBlacklist(filtered);
+        // --- FORM & DATA MANIPULATION ---
+        function displaySuggestions(filtered) {
+            if (filtered.length === 0) { suggestionsDiv.classList.add('hidden'); return; }
+            suggestionsDiv.innerHTML = filtered.map(emp => `<div class="flex items-center p-2 hover:bg-indigo-50 cursor-pointer border-b last:border-b-0" data-id="${emp.id}"><img src="${emp.photo || 'https://placehold.co/40x40/e2e8f0/gray?text=...'}" alt="Photo" class="w-10 h-10 rounded-full object-cover mr-3 border" onerror="this.onerror=null;this.src='https://placehold.co/40x40/e2e8f0/gray?text=Err';"><div><p class="font-medium text-gray-800">${emp.name}</p><p class="text-sm text-gray-500">${emp.id}</p></div></div>`).join('');
+            suggestionsDiv.classList.remove('hidden');
         }
 
-        function switchView(view) {
-            addView.classList.toggle('hidden', view !== 'add');
-            listView.classList.toggle('hidden', view !== 'list');
-            navAddBtn.classList.toggle('active', view === 'add');
-            navListBtn.classList.toggle('active', view === 'list');
-            if (view === 'list') {
-               loadBlacklist(true);
+        function selectEmployee(id) {
+            selectedEmployee = employees.find(emp => emp.id === id);
+            if (selectedEmployee) {
+                searchInput.value = selectedEmployee.name;
+                suggestionsDiv.classList.add('hidden');
+                photoEl.src = selectedEmployee.photo || 'https://placehold.co/100x100/e2e8f0/gray?text=No+Image';
+                photoEl.onerror = () => { photoEl.src = 'https://placehold.co/100x100/e2e8f0/gray?text=Error'; };
+                nameEl.textContent = selectedEmployee.name; employeeIdEl.textContent = `ID: ${selectedEmployee.id}`;
+                genderEl.textContent = selectedEmployee.gender || 'N/A'; classEl.textContent = selectedEmployee.class || 'N/A';
+                groupEl.textContent = selectedEmployee.group || 'N/A'; departmentEl.textContent = selectedEmployee.department || 'N/A';
+                formSection.classList.remove('hidden'); searchInput.disabled = true;
             }
         }
 
-        function displayEmployeeInfo(emp) {
-            document.getElementById('employee-photo').src = emp.photo || 'https://placehold.co/100x100/e2e8f0/64748b?text=រូបថត';
-            document.getElementById('employee-name').textContent = emp.name || 'N/A';
-            document.getElementById('employee-id').textContent = `អត្តលេខ: ${emp.id || 'N/A'}`;
-            ['gender', 'group', 'class', 'department'].forEach(key => {
-                document.getElementById(`employee-${key}`).textContent = emp[key] || 'N/A';
-            });
-            employeeInfo.classList.remove('hidden');
-        }
-        
-        function updateButtonState() { submitButton.disabled = !(problemTextarea.value.trim().length > 0 && selectedEmployee); }
-        function showMessage(msg, isSuccess = true) {
-            messageBox.textContent = msg;
-            messageBox.className = `p-4 mt-4 rounded-lg text-center font-medium ${isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-            messageBox.classList.remove('hidden');
-            setTimeout(() => { messageBox.classList.add('hidden'); }, 4000);
-        }
-        function openEditModal(emp) { entryToModify = emp; document.getElementById('edit-problem-textarea').value = emp.problem; editModal.classList.remove('hidden'); }
-        function openDeleteModal(emp) { entryToModify = emp; deleteModal.classList.remove('hidden'); }
-        
-        // --- EVENT HANDLERS ---
-        async function handleAddSubmit(event) {
-            event.preventDefault();
-            if (submitButton.disabled) return;
-
-            // --- DUPLICATE CHECK ---
-            if (blacklistEmployees.some(entry => entry.id === selectedEmployee.id)) {
-                showMessage('បុគ្គលិកនេះមានក្នុងបញ្ជីខ្មៅរួចហើយ!', false);
-                return;
-            }
-
-            submitButton.disabled = true; submitButton.textContent = 'កំពុងបញ្ជូន...';
-            const newEntry = { action: 'add', ...selectedEmployee, problem: problemTextarea.value.trim(), timestamp: new Date().toISOString() };
-            const result = await postDataToScript(newEntry);
-            
-            showMessage(result.status === 'success' ? 'បានបន្ថែមដោយជោគជ័យ!' : 'ការបញ្ជូនមានបញ្ហា!', result.status === 'success');
-            
-            if (result.status === 'success') {
-                // Add to local list to avoid re-fetching
-                blacklistEmployees.push(newEntry);
-                mainForm.reset(); 
-                selectedEmployee = null; 
-                employeeInfo.classList.add('hidden');
-            }
-            submitButton.disabled = false; submitButton.textContent = 'បន្ថែមទៅក្នុងបញ្ជីខ្មៅ'; 
-            updateButtonState();
+        function resetForm() {
+            selectedEmployee = null; searchInput.value = ''; problemTextarea.value = '';
+            formSection.classList.add('hidden'); suggestionsDiv.classList.add('hidden'); searchInput.disabled = false;
         }
 
-        async function handleSaveEdit() {
-            const newProblem = document.getElementById('edit-problem-textarea').value;
-            const result = await postDataToScript({ action: 'edit', timestamp: entryToModify.timestamp, problem: newProblem });
-            showMessage(result.status === 'success' ? 'កែប្រែបានជោគជ័យ!' : 'ការកែប្រែមានបញ្ហា!', result.status === 'success');
-            if (result.status === 'success') {
-                // Update local list
-                const index = blacklistEmployees.findIndex(e => e.timestamp === entryToModify.timestamp);
-                if (index !== -1) blacklistEmployees[index].problem = newProblem;
-                applyFilters();
+        async function postData(action, payload) {
+            let isSaveAction = action === 'save';
+            if(isSaveAction) {
+                saveButton.disabled = true; saveLoader.classList.remove('hidden'); saveButtonText.classList.add('hidden');
             }
-            editModal.classList.add('hidden');
+            try {
+                await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', cache: 'no-cache', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, payload }) });
+                
+                showMessage('success', 'ប្រតិបត្តិការជោគជ័យ', 'ការផ្លាស់ប្តូរត្រូវបានរក្សាទុកដោយជោគជ័យ។');
+                if (isSaveAction) resetForm(); 
+                
+                await fetchBlacklist();
+                
+            } catch (error) {
+                console.error(`Error with action '${action}':`, error);
+                showMessage('error', 'ប្រតិបត្តិការបរាជ័យ', 'មានបញ្ហាក្នុងការភ្ជាប់ទៅម៉ាស៊ីនមេ។');
+            } finally {
+                if(isSaveAction) {
+                    saveButton.disabled = false; saveLoader.classList.add('hidden'); saveButtonText.classList.remove('hidden');
+                }
+            }
         }
 
-        async function handleDeleteConfirm() {
-            const result = await postDataToScript({ action: 'delete', timestamp: entryToModify.timestamp });
-            showMessage(result.status === 'success' ? 'បានលុបចេញដោយជោគជ័យ!' : 'ការលុបមានបញ្ហា!', result.status === 'success');
-            if (result.status === 'success') {
-                // Remove from local list
-                blacklistEmployees = blacklistEmployees.filter(e => e.timestamp !== entryToModify.timestamp);
-                applyFilters();
-            }
-            deleteModal.classList.add('hidden');
-        }
-        
         // --- EVENT LISTENERS ---
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            if (!searchTerm) { customDropdown.classList.add('hidden'); return; }
-            renderCustomDropdown(employees.filter(emp => emp.name.toLowerCase().includes(searchTerm) || String(emp.id).toLowerCase().includes(searchTerm)));
+        tabAdd.addEventListener('click', () => {
+            addNewSection.classList.remove('hidden'); blacklistSection.classList.add('hidden');
+            tabAdd.className = "flex-1 pb-2 text-center transition-colors duration-300 tab-active";
+            tabView.className = "flex-1 pb-2 text-center transition-colors duration-300 tab-inactive";
         });
-        document.addEventListener('click', (e) => { if (!e.target.closest('.relative')) customDropdown.classList.add('hidden'); });
-        mainForm.addEventListener('submit', handleAddSubmit);
-        problemTextarea.addEventListener('input', updateButtonState);
-        [yearFilter, monthFilter, blacklistSearchInput].forEach(el => el.addEventListener('input', applyFilters));
-        refreshBtn.addEventListener('click', () => { showMessage('កំពុងធ្វើបច្ចុប្បន្នភាព...'); loadBlacklist(true); });
-        navAddBtn.addEventListener('click', () => switchView('add'));
-        navListBtn.addEventListener('click', () => switchView('list'));
-        document.getElementById('save-edit-btn').addEventListener('click', handleSaveEdit);
-        document.getElementById('cancel-edit-btn').addEventListener('click', () => editModal.classList.add('hidden'));
-        document.getElementById('confirm-delete-btn').addEventListener('click', handleDeleteConfirm);
-        document.getElementById('cancel-delete-btn').addEventListener('click', () => deleteModal.classList.add('hidden'));
+        tabView.addEventListener('click', () => {
+            blacklistSection.classList.remove('hidden'); addNewSection.classList.add('hidden');
+            tabView.className = "flex-1 pb-2 text-center transition-colors duration-300 tab-active";
+            tabAdd.className = "flex-1 pb-2 text-center transition-colors duration-300 tab-inactive";
+        });
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            if (query.length < 1) { suggestionsDiv.classList.add('hidden'); return; }
+            const filtered = employees.filter(emp => emp.name.toLowerCase().includes(query) || emp.id.toLowerCase().includes(query));
+            displaySuggestions(filtered.slice(0, 10));
+        });
+        suggestionsDiv.addEventListener('click', (e) => e.target.closest('[data-id]') && selectEmployee(e.target.closest('[data-id]').dataset.id));
+        document.addEventListener('click', (e) => { if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) suggestionsDiv.classList.add('hidden'); });
         
+        saveButton.addEventListener('click', () => {
+             if (!selectedEmployee || !selectedEmployee.id || !selectedEmployee.name) { 
+                showMessage('error', 'ប្រតិបត្តិការបរាជ័យ', 'ព័ត៌មានបុគ្គលិកមិនពេញលេញ។ សូមជ្រើសរើសម្តងទៀត។'); 
+                return; 
+             }
+             const problem = problemTextarea.value.trim();
+             if (!problem) { 
+                showMessage('error', 'ប្រតិបត្តិការបរាជ័យ', 'សូមសរសេរពីបញ្ហាដែលបានកើតឡើង។'); 
+                return; 
+             }
+             postData('save', { ...selectedEmployee, problem });
+        });
+
+        resetButton.addEventListener('click', resetForm);
+        blacklistContainer.addEventListener('click', e => {
+            const card = e.target.closest('.blacklist-item'); if (!card) return;
+            recordToModify.timestamp = card.dataset.timestamp; recordToModify.element = card;
+            if (e.target.closest('.delete-btn')) { deleteModal.classList.remove('hidden'); }
+            if (e.target.closest('.edit-btn')) {
+                editModalName.textContent = card.dataset.name;
+                editProblemTextarea.value = card.querySelector('.problem-text').textContent;
+                editModal.classList.remove('hidden');
+            }
+        });
+        blacklistSearchInput.addEventListener('input', () => {
+            const query = blacklistSearchInput.value.toLowerCase();
+            const filtered = blacklistData.filter(item => item.Name.toLowerCase().includes(query) || item.ID.toLowerCase().includes(query));
+            renderBlacklist(filtered);
+            noResults.classList.toggle('hidden', filtered.length > 0 || blacklistData.length === 0);
+        });
+        refreshBlacklistBtn.addEventListener('click', fetchBlacklist);
+        confirmDeleteBtn.addEventListener('click', () => { postData('delete', { timestamp: recordToModify.timestamp }); deleteModal.classList.add('hidden'); });
+        cancelDeleteBtn.addEventListener('click', () => deleteModal.classList.add('hidden'));
+        saveEditBtn.addEventListener('click', () => {
+            const newProblem = editProblemTextarea.value.trim();
+            if (newProblem) { postData('update', { timestamp: recordToModify.timestamp, newProblem }); editModal.classList.add('hidden'); }
+        });
+        cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden'));
+        messageClose.addEventListener('click', () => messagePopup.classList.add('hidden'));
+
         // --- INITIALIZATION ---
-        async function initialize() {
-            // Load both lists at the start for better performance and duplicate checking.
-            await Promise.all([
-                loadSourceEmployees(),
-                loadBlacklist() 
-            ]);
-            loader.classList.add('hidden');
-            switchView('add');
-        }
-        initialize();
-    });
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchEmployees();
+            fetchBlacklist();
+        });
     </script>
 </body>
 </html>
